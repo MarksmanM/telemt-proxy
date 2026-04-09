@@ -1,0 +1,33 @@
+# telemt.toml
+
+[general]
+prefer_ipv6 = false
+fast_mode = true
+use_middle_proxy = false
+
+[general.modes]
+classic = false 
+secure = false 
+tls = true 
+
+[server]
+port = 443
+
+[server.api]
+enabled = true
+listen = "0.0.0.0:9091"
+whitelist = ["127.0.0.0/8"]
+minimal_runtime_enabled = false
+minimal_runtime_cache_ttl_ms = 1000
+
+[[server.listeners]]
+ip = "0.0.0.0"
+
+[censorship]
+tls_domain = "rg.ru"
+mask = true
+tls_emulation = true 
+tls_front_dir = "tlsfront"
+
+[access.users]
+user1 = "00000000000000000000000000000000"
