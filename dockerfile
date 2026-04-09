@@ -85,16 +85,19 @@ CMD ["config.toml"]
 # ==========================
 # Production Distroless on MUSL
 # ==========================
-FROM gcr.io/distroless/static-debian12 AS prod
-
+FROM debian:12-slim AS prod
 WORKDIR /app
 
 COPY --from=minimal /telemt /app/telemt
+
 COPY config.toml /app/config.toml
 COPY entrypoint.sh /app/entrypoint.sh
-USER nonroot:nonroot
 
+RUN apt-get update && apt-get install -y jq && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* && \
+    chmod +x /app/entrypoint.sh
+
+USER 1000:1000
 EXPOSE 443 9090 9091
-
 ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["config.toml"]
+CMD ["/app/config.toml"]

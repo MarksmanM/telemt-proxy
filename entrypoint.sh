@@ -1,13 +1,24 @@
 #!/bin/sh
 set -e
 
-LOCAL_IP="0.0.0.0"
 CONFIG_PATH="/run/telemt/config.toml"
+SECRETS_PATH="/run/telemt/secrets.json"
 TLSFRONT_DIR="/run/telemt/tlsfront"
 
 # Логирование
-echo "Starting telemt proxy from $(pwd)"
-echo "RUST_LOG: $RUST_LOG"
+echo "|=====================================================|"
+echo "|===Starting telemt proxy from $(pwd)==="
+echo "|RUST_LOG: $RUST_LOG"
+
+SERVER_IP=$(jq -r '.server_ip' "$SECRETS_PATH")
+MASK_DOMAIN=$(jq -r '.mask_domain' "$SECRETS_PATH")
+
+echo "|Server IP: $SERVER_IP"
+echo "|Mask domain: $MASK_DOMAIN"
+echo "|=====================================================|"
+
+cp "$CONFIG_PATH" /tmp/config.toml
+sed -i "/^\[censorship\]/,/^\[/s/^tls_domain *= *\".*\"/tls_domain = \"$MASK_DOMAIN\"/" /tmp/config.toml
 
 # Проверка config
 if [ ! -f "$CONFIG_PATH" ]; then
@@ -22,23 +33,17 @@ if grep -q 'tls_emulation.*true' "$CONFIG_PATH" && [ ! -d "$TLSFRONT_DIR" ]; the
 fi
 
 # Генерация секрета если не задан или плейсхолдер
-if ! grep -q '^[[:space:]]*[a-zA-Z0-9_]\+.*[0-9a-f]\{32\}$' "$CONFIG_PATH" 2>/dev/null || grep -q '00000000000000000000000000000000' "$CONFIG_PATH"; then
+if grep -q '00000000000000000000000000000000' /tmp/config.toml; then
   SECRET=$(openssl rand -hex 16)
-  echo "Generated new secret: $SECRET"
-  
-  # Обновляем config.toml (заменяем первую строку users)
-  sed -i "s/^\([[:space:]]*[a-zA-Z0-9_]\+ *= *\).*/\\1\"$SECRET\"/" "$CONFIG_PATH"
-  
-  echo "Updated $CONFIG_PATH with user1 = \"$SECRET\""
+  sed -i "s/00000000000000000000000000000000/$SECRET/" /tmp/config.toml
 else
-  SECRET=$(grep '^\[access\.users\]' -A 10 "$CONFIG_PATH" | grep -o '[0-9a-f]\{32\}' | head -1)
-  echo "Using existing secret: $SECRET"
+  SECRET=$(grep -o '[0-9a-f]\{32\}' /tmp/config.toml | head -1)
 fi
 
 echo "|=====================================================|"
-echo "|tg://proxy?server=$LOCAL_IP&port=443&secret=$SECRET"
-echo "|Share link: https://t.me/proxy?server=$LOCAL_IP&port=443&secret=$SECRET"
+echo "|tg://proxy?server=$SERVER_IP&port=443&secret=$SECRET"
+echo "|Share link: https://t.me/proxy?server=$SERVER_IP&port=443&secret=$SECRET"
 echo "|=====================================================|"
 
 # Запуск
-exec /app/telemt "$@"
+exec /app/telemt /tmp/config.toml

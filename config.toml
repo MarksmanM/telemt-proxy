@@ -24,7 +24,7 @@ minimal_runtime_cache_ttl_ms = 1000
 ip = "0.0.0.0"
 
 [censorship]
-tls_domain = "rg.ru"
+tls_domain = ""
 mask = true
 tls_emulation = true 
 tls_front_dir = "tlsfront"
