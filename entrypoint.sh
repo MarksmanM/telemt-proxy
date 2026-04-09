@@ -1,21 +1,44 @@
 #!/bin/sh
 set -e
 
-# Логирование запуска
-echo "Starting telemt proxy from $(pwd) with config: /run/telemt/config.toml"
+LOCAL_IP="0.0.0.0"
+CONFIG_PATH="/run/telemt/config.toml"
+TLSFRONT_DIR="/run/telemt/tlsfront"
+
+# Логирование
+echo "Starting telemt proxy from $(pwd)"
 echo "RUST_LOG: $RUST_LOG"
 
 # Проверка config
-if [ ! -f /run/telemt/config.toml ]; then
-  echo "ERROR: config.toml not found at /run/telemt/config.toml"
+if [ ! -f "$CONFIG_PATH" ]; then
+  echo "ERROR: $CONFIG_PATH not found"
   exit 1
 fi
 
-# Создание tlsfront если нужно (для tls_emulation)
-if grep -q 'tls_emulation.*true' /run/telemt/config.toml && [ ! -d /run/telemt/tlsfront ]; then
-  mkdir -p /run/telemt/tlsfront
-  chmod 755 /run/telemt/tlsfront
+# Создание tlsfront если tls_emulation=true
+if grep -q 'tls_emulation.*true' "$CONFIG_PATH" && [ ! -d "$TLSFRONT_DIR" ]; then
+  mkdir -p "$TLSFRONT_DIR"
+  chmod 755 "$TLSFRONT_DIR"
 fi
 
-# Запуск telemt (аргумент CMD из Dockerfile)
+# Генерация секрета если не задан или плейсхолдер
+if ! grep -q '^[[:space:]]*[a-zA-Z0-9_]\+.*[0-9a-f]\{32\}$' "$CONFIG_PATH" 2>/dev/null || grep -q '00000000000000000000000000000000' "$CONFIG_PATH"; then
+  SECRET=$(openssl rand -hex 16)
+  echo "Generated new secret: $SECRET"
+  
+  # Обновляем config.toml (заменяем первую строку users)
+  sed -i "s/^\([[:space:]]*[a-zA-Z0-9_]\+ *= *\).*/\\1\"$SECRET\"/" "$CONFIG_PATH"
+  
+  echo "Updated $CONFIG_PATH with user1 = \"$SECRET\""
+else
+  SECRET=$(grep '^\[access\.users\]' -A 10 "$CONFIG_PATH" | grep -o '[0-9a-f]\{32\}' | head -1)
+  echo "Using existing secret: $SECRET"
+fi
+
+# Выводим готовые ссылки (замените YOUR_SERVER_IP на ваш IP)
+echo "Proxy links (replace YOUR_SERVER_IP):"
+echo "tg://proxy?server=YOUR_SERVER_IP&port=443&secret=$SECRET"
+echo "Share link: https://t.me/proxy?server=YOUR_SERVER_IP&port=443&secret=$SECRET"
+
+# Запуск
 exec /app/telemt "$@"
