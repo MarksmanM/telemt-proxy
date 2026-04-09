@@ -74,10 +74,12 @@ WORKDIR /app
 
 COPY --from=minimal /telemt /app/telemt
 COPY config.toml /app/config.toml
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 EXPOSE 443 9090 9091
 
-ENTRYPOINT ["/app/telemt"]
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["config.toml"]
 
 # ==========================
@@ -89,10 +91,10 @@ WORKDIR /app
 
 COPY --from=minimal /telemt /app/telemt
 COPY config.toml /app/config.toml
-
+COPY entrypoint.sh /app/entrypoint.sh
 USER nonroot:nonroot
 
 EXPOSE 443 9090 9091
 
-ENTRYPOINT ["/app/telemt"]
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["config.toml"]

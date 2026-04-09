@@ -12,6 +12,7 @@ services:
     working_dir: /run/telemt
     volumes:
       - ./config.toml:/run/telemt/config.toml:ro
+      - ./entrypoint.sh:/run/telemt/entrypoint.sh:ro
     tmpfs:
       - /run/telemt:rw,mode=1777,size=1m
     environment:

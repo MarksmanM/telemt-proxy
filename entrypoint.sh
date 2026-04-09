@@ -35,10 +35,10 @@ else
   echo "Using existing secret: $SECRET"
 fi
 
-# Выводим готовые ссылки (замените YOUR_SERVER_IP на ваш IP)
-echo "Proxy links (replace YOUR_SERVER_IP):"
-echo "tg://proxy?server=YOUR_SERVER_IP&port=443&secret=$SECRET"
-echo "Share link: https://t.me/proxy?server=YOUR_SERVER_IP&port=443&secret=$SECRET"
+echo "|=====================================================|"
+echo "|tg://proxy?server=$LOCAL_IP&port=443&secret=$SECRET"
+echo "|Share link: https://t.me/proxy?server=$LOCAL_IP&port=443&secret=$SECRET"
+echo "|=====================================================|"
 
 # Запуск
 exec /app/telemt "$@"
