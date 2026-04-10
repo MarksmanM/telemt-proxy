@@ -5,6 +5,10 @@ prefer_ipv6 = false
 fast_mode = true
 use_middle_proxy = false
 
+[general.links]
+public_host = "217.60.0.44"
+public_port = 443
+
 [general.modes]
 classic = false 
 secure = false 

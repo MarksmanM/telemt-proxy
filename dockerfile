@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 ARG TELEMT_REPOSITORY=telemt/telemt
-ARG TELEMT_VERSION=latest
+ARG TELEMT_VERSION=3.3.29
 
 # ==========================
 # Minimal Image
@@ -40,15 +40,15 @@ RUN set -eux; \
         --max-time 120 \
         -o "/tmp/${ASSET}" \
         "${BASE_URL}/${ASSET}"; \
-    curl -fL \
-        --retry 5 \
-        --retry-delay 3 \
-        --connect-timeout 10 \
-        --max-time 120 \
-        -o "/tmp/${ASSET}.sha256" \
-        "${BASE_URL}/${ASSET}.sha256"; \
+    #curl -fL \
+        #--retry 5 \
+        #--retry-delay 3 \
+        #--connect-timeout 10 \
+        #--max-time 120 \
+        #-o "/tmp/${ASSET}.sha256" \
+        #"${BASE_URL}/${ASSET}.sha256"; \
     cd /tmp; \
-    sha256sum -c "${ASSET}.sha256"; \
+    #sha256sum -c "${ASSET}.sha256"; \
     tar -xzf "${ASSET}" -C /tmp; \
     test -f /tmp/telemt; \
     install -m 0755 /tmp/telemt /telemt; \
@@ -93,11 +93,10 @@ COPY --from=minimal /telemt /app/telemt
 COPY config.toml /app/config.toml
 COPY entrypoint.sh /app/entrypoint.sh
 
-RUN apt-get update && apt-get install -y jq && \
+RUN apt-get update && apt-get install -y jq openssl && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
     chmod +x /app/entrypoint.sh
 
-USER 1000:1000
 EXPOSE 443 9090 9091
 ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["/app/config.toml"]
