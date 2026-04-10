@@ -93,11 +93,10 @@ COPY --from=minimal /telemt /app/telemt
 COPY config.toml /app/config.toml
 COPY entrypoint.sh /app/entrypoint.sh
 
-RUN apt-get update && apt-get install -y jq && \
+RUN apt-get update && apt-get install -y jq openssl && \
     apt-get clean && rm -rf /var/lib/apt/lists/* && \
     chmod +x /app/entrypoint.sh
 
-USER 1000:1000
 EXPOSE 443 9090 9091
 ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["/app/config.toml"]

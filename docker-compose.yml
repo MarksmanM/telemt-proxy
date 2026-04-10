@@ -4,19 +4,17 @@ services:
     build: .
     container_name: telemt
     restart: unless-stopped
-    ports:
-      - "443:443"
-      - "127.0.0.1:9090:9090"
-      - "127.0.0.1:9091:9091"
+    network_mode: host
+    #ports:
+      #- "443:443"
+      #- "127.0.0.1:9090:9090"
+      #- "127.0.0.1:9091:9091"
     # Allow caching 'proxy-secret' in read-only container
-    working_dir: /run/telemt
     volumes:
       - ./secrets.json:/run/telemt/secrets.json:ro
       - ./config.toml:/run/telemt/config.toml:rw
       - ./entrypoint.sh:/run/telemt/entrypoint.sh:ro
     command: ["config.toml"]
-    tmpfs:
-      - /run/telemt:rw,size=1m
     environment:
       - RUST_LOG=info
     # Uncomment this line if you want to use host network for IPv6, but bridge is default and usually better
