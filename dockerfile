@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 ARG TELEMT_REPOSITORY=telemt/telemt
-ARG TELEMT_VERSION=3.3.29
+ARG TELEMT_VERSION=latest
 
 # ==========================
 # Minimal Image
@@ -40,15 +40,15 @@ RUN set -eux; \
         --max-time 120 \
         -o "/tmp/${ASSET}" \
         "${BASE_URL}/${ASSET}"; \
-    #curl -fL \
-        #--retry 5 \
-        #--retry-delay 3 \
-        #--connect-timeout 10 \
-        #--max-time 120 \
-        #-o "/tmp/${ASSET}.sha256" \
-        #"${BASE_URL}/${ASSET}.sha256"; \
+    curl -fL \
+        --retry 5 \
+        --retry-delay 3 \
+        --connect-timeout 10 \
+        --max-time 120 \
+        -o "/tmp/${ASSET}.sha256" \
+        "${BASE_URL}/${ASSET}.sha256"; \
     cd /tmp; \
-    #sha256sum -c "${ASSET}.sha256"; \
+    sha256sum -c "${ASSET}.sha256"; \
     tar -xzf "${ASSET}" -C /tmp; \
     test -f /tmp/telemt; \
     install -m 0755 /tmp/telemt /telemt; \

@@ -32,6 +32,7 @@ tls_domain = ""
 mask = true
 tls_emulation = true 
 tls_front_dir = "tlsfront"
+unknown_sni_action = "mask"
 
 [access.users]
 user1 = "00000000000000000000000000000000"
